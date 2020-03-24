@@ -22,9 +22,9 @@ import utils.calc_hr as calc_hr
 parser = argparse.ArgumentParser(description="ADSH demo")
 parser.add_argument('--bits', default='12,24,32,48', type=str,
                     help='binary code length (default: 12,24,32,48)')
-parser.add_argument('--gpu', default='3', type=str,
+parser.add_argument('--gpu', default='0', type=str,
                     help='selected gpu (default: 1)')
-parser.add_argument('--arch', default='resnet50', type=str,
+parser.add_argument('--arch', default='alexnet', type=str,
                     help='model name (default: resnet50)')
 parser.add_argument('--max-iter', default=50, type=int,
                     help='maximum iteration (default: 50)')
@@ -200,7 +200,7 @@ def adsh_algo(code_length):
         '''
         learning deep neural network: feature learning
         '''
-        sample_label = database_labels.index_select(0, torch.from_numpy(np.array(select_index)))
+        sample_label = database_labels.index_select(0, torch.from_numpy(np.array(torch.LongTensor(select_index))))
         Sim = calc_sim(sample_label, database_labels)
         U = np.zeros((num_samples, code_length), dtype=np.float)
         for epoch in range(epochs):
@@ -210,7 +210,7 @@ def adsh_algo(code_length):
                 train_input = Variable(train_input.cuda())
 
                 output = model(train_input)
-                S = Sim.index_select(0, torch.from_numpy(u_ind))
+                S = Sim.index_select(0, torch.from_numpy(np.array(torch.LongTensor(u_ind))))
                 U[u_ind, :] = output.cpu().data.numpy()
 
                 model.zero_grad()
